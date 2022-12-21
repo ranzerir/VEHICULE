@@ -132,8 +132,10 @@ public class Avion {
                 v.setMarque(rs.getString("marque"));
                 v.setAnnee(rs.getInt("annee"));
                 File p=new File("serveur/"+rs.getInt("id")+".jpg");
-                byte[] pae = Files.readAllBytes(p.toPath());                   
-                v.setImage((Base64.getEncoder().encodeToString(pae)));
+                if(p.exists()){
+                    byte[] pae = Files.readAllBytes(p.toPath());                   
+                    v.setImage((Base64.getEncoder().encodeToString(pae)));
+                }
                 list.add(v);
             }
         } catch (Exception e) {
@@ -180,8 +182,10 @@ public class Avion {
                 v.setMarque(rs.getString("marque"));
                 v.setAnnee(rs.getInt("annee"));
                 File p=new File("serveur/"+rs.getInt("id")+".jpg");
-                byte[] pae = Files.readAllBytes(p.toPath());                   
-                v.setImage((Base64.getEncoder().encodeToString(pae)));
+                if(p.exists()){
+                    byte[] pae = Files.readAllBytes(p.toPath());                   
+                    v.setImage((Base64.getEncoder().encodeToString(pae)));
+                }
                 i++;
             }
             v.setDates(dates);
