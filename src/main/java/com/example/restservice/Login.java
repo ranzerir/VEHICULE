@@ -126,7 +126,7 @@ public class Login {
             myObj.createNewFile();
             Path path = Paths.get(myObj.toURI());
             Files.write(path, bytes);
-            BufferedImage bimg = ImageIO.read(new FileImageInputStream(myObj));
+            BufferedImage bimg = ImageIO.read(new FileInputStream(myObj));
             int width          = bimg.getWidth();
             int height         = bimg.getHeight(); 
             int pp=(int) Files.size(path);
