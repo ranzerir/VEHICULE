@@ -23,6 +23,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageInputStream;
 import javax.servlet.MultipartConfigElement;
 import model.Entite;
 import model.FormWrapper;
@@ -125,15 +126,15 @@ public class Login {
             myObj.createNewFile();
             Path path = Paths.get(myObj.toURI());
             Files.write(path, bytes);
-//            BufferedImage bimg = ImageIO.read(myObj);
-//            int width          = bimg.getWidth();
-//            int height         = bimg.getHeight(); 
-//            int pp=(int) Files.size(path);
-//            System.out.println(width+"      "+height+"      "+pp);
-//            int ss=(int) (pp/1000000);
-//            int scaledWidth = width/ss;
-//            int scaledHeight = height/ss;
-//            Login.resize("serveur/"+file.getOriginalFilename(), "serveur/"+file.getOriginalFilename(), scaledWidth, scaledHeight);
+            BufferedImage bimg = ImageIO.read(new FileImageInputStream(myObj));
+            int width          = bimg.getWidth();
+            int height         = bimg.getHeight(); 
+            int pp=(int) Files.size(path);
+            System.out.println(width+"      "+height+"      "+pp);
+            int ss=(int) (pp/1000000);
+            int scaledWidth = width/ss;
+            int scaledHeight = height/ss;
+            Login.resize("serveur/"+file.getOriginalFilename(), "serveur/"+file.getOriginalFilename(), scaledWidth, scaledHeight);
         }
     }
         @RequestMapping(value = "/api/render/file",method=RequestMethod.GET)
