@@ -23,12 +23,16 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
+import javax.servlet.MultipartConfigElement;
 import model.Entite;
 import model.FormWrapper;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.springframework.boot.web.servlet.MultipartConfigFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,6 +76,48 @@ public class Login {
         }
         return new ResponseEntity<>("{\"message\": \"Logout succes\"}", HttpStatus.OK);
     }
+    
+    
+    public static void resize(String inputImagePath,
+            String outputImagePath, int scaledWidth, int scaledHeight)
+            throws IOException {
+        // reads input image
+        File inputFile = new File(inputImagePath);
+        BufferedImage inputImage = ImageIO.read(inputFile);
+ 
+        // creates output image
+        BufferedImage outputImage = new BufferedImage(scaledWidth,
+                scaledHeight, inputImage.getType());
+ 
+        // scales the input image to the output image
+        Graphics2D g2d = outputImage.createGraphics();
+        g2d.drawImage(inputImage, 0, 0, scaledWidth, scaledHeight, null);
+        g2d.dispose();
+ 
+        // extracts extension of output file
+        String formatName = outputImagePath.substring(outputImagePath
+                .lastIndexOf(".") + 1);
+ 
+        // writes to output file
+        ImageIO.write(outputImage, formatName, new File(outputImagePath));
+    }
+ 
+    /**
+     * Resizes an image by a percentage of original size (proportional).
+     * @param inputImagePath Path of the original image
+     * @param outputImagePath Path to save the resized image
+     * @param percent a double number specifies percentage of the output image
+     * over the input image.
+     * @throws IOException
+     */
+    public static void resize(String inputImagePath,
+            String outputImagePath, double percent) throws IOException {
+        File inputFile = new File(inputImagePath);
+        BufferedImage inputImage = ImageIO.read(inputFile);
+        int scaledWidth = (int) (inputImage.getWidth() * percent);
+        int scaledHeight = (int) (inputImage.getHeight() * percent);
+        resize(inputImagePath, outputImagePath, scaledWidth, scaledHeight);
+    }
     private void saveUploadedFile(MultipartFile file) throws IOException {
         if (!file.isEmpty()) {
             byte[] bytes = file.getBytes();
@@ -79,31 +125,16 @@ public class Login {
             myObj.createNewFile();
             Path path = Paths.get(myObj.toURI());
             Files.write(path, bytes);
-            InputStream input = new FileInputStream(myObj);
-            BufferedImage originalImage = ImageIO.read(input);
-            Image newResizedImage = originalImage.getScaledInstance(300, 100, Image.SCALE_SMOOTH);
-            String s = myObj.getAbsolutePath();
-            String fileExtension = s.substring(s.lastIndexOf(".") + 1);
-            ImageIO.write(convertToBufferedImage(newResizedImage),
-                    fileExtension, myObj);
+            BufferedImage bimg = ImageIO.read(myObj);
+            int width          = bimg.getWidth();
+            int height         = bimg.getHeight(); 
+            int pp=(int) Files.size(path);
+            System.out.println(width+"      "+height+"      "+pp);
+            int ss=(int) (pp/1000000);
+            int scaledWidth = width/ss;
+            int scaledHeight = height/ss;
+            Login.resize("serveur/"+file.getOriginalFilename(), "serveur/"+file.getOriginalFilename(), scaledWidth, scaledHeight);
         }
-    }
-    public static BufferedImage convertToBufferedImage(Image img) {;
-
-        if (img instanceof BufferedImage) {
-            return (BufferedImage) img;
-        }
-
-        // Create a buffered image with transparency
-        BufferedImage bi = new BufferedImage(
-                img.getWidth(null), img.getHeight(null),
-                BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D graphics2D = bi.createGraphics();
-        graphics2D.drawImage(img, 0, 0, null);
-        graphics2D.dispose();
-
-        return bi;
     }
         @RequestMapping(value = "/api/render/file",method=RequestMethod.GET)
         public ResponseEntity<Object> multiUploadFileModel() throws IOException{
@@ -134,4 +165,12 @@ public class Login {
             }
         return new ResponseEntity<>("Successfully uploaded!", HttpStatus.OK);
     }   
+        @Bean
+        public MultipartConfigElement multipartConfigElement() {
+            MultipartConfigFactory factory = new MultipartConfigFactory();
+            DataSize rr=DataSize.ofMegabytes(10000000);
+            factory.setMaxFileSize(rr);
+            factory.setMaxRequestSize(rr);
+            return factory.createMultipartConfig();
+        }
 }
