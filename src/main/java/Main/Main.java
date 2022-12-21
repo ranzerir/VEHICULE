@@ -6,6 +6,8 @@ package Main;
 
 import connectivity.Connexion;
 import java.sql.Connection;
+import java.util.List;
+import materiels.Assurance;
 import materiels.Avion;
 
 /**
@@ -15,8 +17,8 @@ import materiels.Avion;
 public class Main {
     public static void main(String[] args) {
         try{
-            Avion v=new Avion();
-            Avion p=v.findById(1);        
+            Assurance v=new Assurance();
+            List<Assurance> p=v.findAll(1);        
 //            Connection con=new Connexion().getConnect();
         }
         catch( Exception ee){
